@@ -1,4 +1,7 @@
-import { Schema, model, mongo } from "mongoose";
+import { Schema, model } from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
 const userSchema = new Schema({
   Name: {
     type: String,
@@ -33,5 +36,19 @@ const userSchema = new Schema({
     minerals: [{ type: String }],
   },
 });
+userSchema.pre("save", async function () {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+    return next();
+  }
+  return next();
+});
+userSchema.getJwtToken=function(){
+return jwt.sign({id:this._id},"yashkasecret",{expiresIn:'10d'})
+} 
+userSchema.ComparePassword=function(password){
+  return bcrypt.compare(password,this.password);
+  
+}
 const usermodel = model("User", userSchema);
 export default usermodel;
