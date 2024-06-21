@@ -13,7 +13,7 @@ const userSchema = new Schema({
     unique: true,
   },
   password: {
-    type: string,
+    type: String,
     required: [true, "please Enter password"],
     minLength: [4, "your password should be atleast of length 4 "],
     maxLength: [15, "your password should not be greater than 15"],
@@ -36,7 +36,7 @@ const userSchema = new Schema({
     minerals: [{ type: String }],
   },
 });
-userSchema.pre("save", async function () {
+userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
     return next();
@@ -48,7 +48,7 @@ return jwt.sign({id:this._id},"yashkasecret",{expiresIn:'10d'})
 } 
 userSchema.ComparePassword=function(password){
   return bcrypt.compare(password,this.password);
-  
+
 }
 const usermodel = model("User", userSchema);
 export default usermodel;
