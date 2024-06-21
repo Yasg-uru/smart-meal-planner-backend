@@ -1,9 +1,12 @@
-import { Schema } from "mongoose";
+import { Schema, model } from "mongoose";
 
 const Recipeschema = new Schema({
   title: {
     type: String,
     required: [true, "please enter the title of the recipe"],
+  },
+  imageurl: {
+    type: String,
   },
   description: {
     type: String,

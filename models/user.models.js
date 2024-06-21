@@ -43,10 +43,10 @@ userSchema.pre("save", async function (next) {
   }
   return next();
 });
-userSchema.getJwtToken=function(){
+userSchema.methods.getJwtToken=function(){
 return jwt.sign({id:this._id},"yashkasecret",{expiresIn:'10d'})
 } 
-userSchema.ComparePassword=function(password){
+userSchema.methods.ComparePassword=function(password){
   return bcrypt.compare(password,this.password);
 
 }
