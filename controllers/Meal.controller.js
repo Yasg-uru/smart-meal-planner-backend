@@ -3,6 +3,8 @@ import catchaysynerror from "../middlewares/Catchasynerror.middleware.js";
 import Errorhandler from "../utils/Errorhandler.utils";
 import Recipe from "../models/Recipe.model.js";
 import { ObjectId } from "mongodb";
+import paginate from "mongoose-paginate";
+
 export const CreateMealplan = catchaysynerror(async (req, res, next) => {
   try {
     const { startDate, endDate, meals } = req.body;
@@ -66,7 +68,7 @@ async function generateShoppingList(recipes) {
         ShoppingList.push({
           name: ingredients.name,
           quantity: ingredients.quantity,
-          isChecked:false
+          isChecked: false,
         });
       }
     }
@@ -74,3 +76,59 @@ async function generateShoppingList(recipes) {
   return ShoppingList;
 }
 
+export const deleteMeal = catchaysynerror(async (req, res, next) => {
+  try {
+    const { mealId } = req.params;
+    const deletedMeal = await Mealplan.findbyIdAndDelete(mealId);
+    if (!deleteMeal) {
+      return next(new Errorhandler(404, "meal deletion failed "));
+    }
+    res.status(200).json({
+      success: true,
+      message: "deleted your meal plan successfully",
+      deletedMeal,
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error "));
+  }
+});
+
+export const getyourmeals = catchaysynerror(async (req, res, next) => {
+  try {
+    const options = {
+      page: parseInt(req.query.page) || 1,
+      limit: 10,
+    };
+    const mealplanes = await Mealplan.paginate({ user: req.user._id }, options);
+    if (!mealplanes) {
+      return next(new Errorhandler(404, "meal plan not found "));
+    }
+    res.status(200).json({
+      success: true,
+      message: "successfully fecthed your meal ",
+      mealplanes,
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error "));
+  }
+});
+export const searchyourmeals = catchaysynerror(async (req, res, next) => {
+  try {
+    const { searchTerm } = req.query;
+    const result = await Mealplan.find({
+      $text: { $search: searchTerm },
+    });
+    if (!result) {
+      return next(
+        new Errorhandler(404, "meal plan not found for this searchquery")
+      );
+    }
+    res.status(200).json({
+      success: true,
+      message: "successfully searched your meal plan ",
+      result,
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error "));
+  }
+});
