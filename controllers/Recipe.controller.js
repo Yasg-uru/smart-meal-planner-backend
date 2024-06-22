@@ -255,3 +255,42 @@ export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
     }
   }
 );
+
+export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
+  try {
+    const { recipeId } = req.params;
+    const { persons } = req.query;
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      return next(new Errorhandler(404, "recipe not found "));
+    }
+
+    const AdjustedIngredients = recipe.ingredients.map((ingredient) => ({
+      ...ingredient,
+      quantity: AdjustedIngredientQuantity(ingredient.quantity, persons),
+    }));
+    const AdjustedRecipe = {
+      ...recipe.toObject(),
+      ingredients: AdjustedIngredients,
+    };
+    res.status(200).json({
+      success: true,
+      message:
+        "successfully updated recipe according to number of persons as you given ",
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error "));
+  }
+});
+function AdjustedIngredientQuantity(OriginalQuantity, persons) {
+  const QuantityParts = OriginalQuantity.split(" ");
+  const numericvalue = parseFloat(QuantityParts[0]);
+  const unit = QuantityParts.slice(1);
+  if (!isNaN(numericvalue)) {
+    const adjustedValue = numericvalue * (persons / 4);
+    return `${adjustedValue} ${unit}`;
+  } else {
+    return OriginalQuantity;
+  }
+}
+

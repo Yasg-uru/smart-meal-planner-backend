@@ -34,6 +34,11 @@ const Recipeschema = new Schema({
     type: String,
     enum: ["lunch", "dinner", "snack", "breakfast"],
   },
+  NumberofPersons:{
+    type:Number,
+    required:[true ,"please enter Number of persons "]
+  }
+  ,
   dietaryLabels: [String],
   nutritionalInfo: {
     calories: { type: Number },
