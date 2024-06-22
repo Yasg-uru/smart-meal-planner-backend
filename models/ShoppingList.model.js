@@ -20,6 +20,8 @@ const ShoppingSchema = new Schema({
       },
     },
   ],
+},{
+  timestamps:true
 });
 const shoppingmodel = model("Shopping", ShoppingSchema);
 export default shoppingmodel;

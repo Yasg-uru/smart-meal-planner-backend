@@ -225,7 +225,7 @@ export const compareRecipeBynutrients = catchaysynerror(
     }
   }
 );
-export const GetRecipesAccordingtoIngredients = catchaysynerror(
+export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
   async (req, res, next) => {
     try {
       const { MissingIngredients } = req.body;
