@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-
+import paginate from "mongoose-paginate-v2"
 const Recipeschema = new Schema({
   title: {
     type: String,
@@ -49,5 +49,7 @@ const Recipeschema = new Schema({
     minerals: [{ type: String }],
   },
 });
+Recipeschema.index({ name: 'text', description: 'text' });
+Recipeschema.plugin(paginate)
 const recipemodel = model("Recipe", Recipeschema);
 export default recipemodel;

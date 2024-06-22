@@ -4,8 +4,8 @@ import {isAuthenticated} from "../middlewares/auth.middleware.js";
 
 const RecipeRouter=Router();
 RecipeRouter.post("/create",isAuthenticated,createRecipe);
-RecipeRouter.put("/update",isAuthenticated,updaterecipe);
-RecipeRouter.delete("/delete",isAuthenticated,deleterecipe);
+RecipeRouter.put("/update/:id",isAuthenticated,updaterecipe);
+RecipeRouter.delete("/delete/:id",isAuthenticated,deleterecipe);
 RecipeRouter.get("/bysearch",isAuthenticated,GetRecipesBySearch);
 RecipeRouter.get("/bypagination",isAuthenticated,GetRecipesBypagination);
 RecipeRouter.get("/compare",isAuthenticated,Comparerecipewithdailygoals);

@@ -2,7 +2,7 @@ import catchaysynerror from "../middlewares/Catchasynerror.middleware.js";
 import Errorhandler from "../utils/Errorhandler.utils.js";
 import UploadOnCloudinary from "../utils/cloudinary.utils.js";
 import Recipe from "../models/Recipe.model.js";
-import paginate from "mongoose-paginate";
+import paginate from "mongoose-paginate-v2";
 
 export const createRecipe = catchaysynerror(async (req, res, next) => {
   try {
@@ -55,8 +55,10 @@ export const deleterecipe = catchaysynerror(async (req, res, next) => {
 
 export const GetRecipesBySearch = catchaysynerror(async (req, res, next) => {
   try {
-    const { searchterm } = req.params;
-    const query = { $text: { $search: searchterm } };
+    const searchTerm = req.query.searchTerm || ""; // Assuming searchTerm comes from request query
+
+    const query = { $text: { $search: searchTerm } }; // Make search term lowercase
+
     const recipes = await Recipe.find(query);
     res.status(200).json({
       success: true,
@@ -70,7 +72,7 @@ export const GetRecipesBySearch = catchaysynerror(async (req, res, next) => {
 export const GetRecipesBypagination = catchaysynerror(
   async (req, res, next) => {
     try {
-      const page = parseInt(req.params.page) || 1;
+      const page = parseInt(req.query.page) || 1;
       const limit = 20;
       const options = { page, limit };
       const recipes = await Recipe.paginate({}, options);
@@ -88,7 +90,7 @@ export const GetRecipesBypagination = catchaysynerror(
 export const Comparerecipewithdailygoals = catchaysynerror(
   async (req, res, next) => {
     try {
-      const { recipeId } = req.params;
+      const { recipeId } = req.query;
       if (!recipeId) {
         return next(new Errorhandler(404, "please provide recipeId"));
       }
@@ -147,7 +149,7 @@ export const Comparerecipewithdailygoals = catchaysynerror(
 export const compareRecipeBynutrients = catchaysynerror(
   async (req, res, next) => {
     try {
-      const { recipeId1, recipeId2 } = req.body;
+      const { recipeId1, recipeId2 } = req.query;
       if (!recipeId1 || !recipeId2) {
         return next(
           new Errorhandler(
@@ -234,8 +236,11 @@ export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
         return next(new Errorhandler(404, "recipe not found "));
       }
       const Recipesfiltered = Allrecipes.filter((recipe) => {
-        return MissingIngredients.every((missingingredient) =>
-          recipe.ingredients.includes(missingingredient)
+        const recipeIngredients = recipe.ingredients.map((ingredient) =>
+          ingredient.name.toLowerCase()
+        );
+        return MissingIngredients.every((missingIngredient) =>
+          recipeIngredients.includes(missingIngredient.toLowerCase())
         );
       });
       if (Recipesfiltered.length <= 0) {
@@ -258,7 +263,7 @@ export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
 
 export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
   try {
-    const { recipeId } = req.params;
+    const { recipeId } = req.query;
     const { persons } = req.query;
     const recipe = await Recipe.findById(recipeId);
     if (!recipe) {
@@ -266,7 +271,7 @@ export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
     }
 
     const AdjustedIngredients = recipe.ingredients.map((ingredient) => ({
-      ...ingredient,
+      ...ingredient.toObject(),
       quantity: AdjustedIngredientQuantity(ingredient.quantity, persons),
     }));
     const AdjustedRecipe = {
@@ -277,6 +282,7 @@ export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
       success: true,
       message:
         "successfully updated recipe according to number of persons as you given ",
+        AdjustedRecipe
     });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error "));
@@ -293,4 +299,3 @@ function AdjustedIngredientQuantity(OriginalQuantity, persons) {
     return OriginalQuantity;
   }
 }
-
