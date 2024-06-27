@@ -2,6 +2,7 @@ import Mealplan from "../models/MealPlane.models.js";
 import catchaysynerror from "../middlewares/Catchasynerror.middleware.js";
 import Errorhandler from "../utils/Errorhandler.utils";
 import Recipe from "../models/Recipe.model.js";
+import {generateShoppingList} from "../helpers/Meal.helper.js";
 
 import paginate from "mongoose-paginate";
 import { FindFilteredRecipes } from "../helpers/Meal.helper.js";
@@ -40,26 +41,7 @@ export const CreateMealplan = catchaysynerror(async (req, res, next) => {
   }
 });
 
-async function generateShoppingList(recipes) {
-  const ShoppingList = [];
-  for (const recipe of recipes) {
-    for (const ingredients of recipe.ingredients) {
-      const existingingredients = ShoppingList.find(
-        (item) => item.name === ingredients.name
-      );
-      if (existingingredients) {
-        existingingredients.quantity += ingredients.quantity;
-      } else {
-        ShoppingList.push({
-          name: ingredients.name,
-          quantity: ingredients.quantity,
-          isChecked: false,
-        });
-      }
-    }
-  }
-  return ShoppingList;
-}
+
 
 export const deleteMeal = catchaysynerror(async (req, res, next) => {
   try {
