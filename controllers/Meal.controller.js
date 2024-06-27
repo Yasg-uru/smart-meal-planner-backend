@@ -2,9 +2,9 @@ import Mealplan from "../models/MealPlane.models.js";
 import catchaysynerror from "../middlewares/Catchasynerror.middleware.js";
 import Errorhandler from "../utils/Errorhandler.utils";
 import Recipe from "../models/Recipe.model.js";
-import { ObjectId } from "mongodb";
-import paginate from "mongoose-paginate";
 
+import paginate from "mongoose-paginate";
+import { FindFilteredRecipes } from "../helpers/Meal.helper.js";
 export const CreateMealplan = catchaysynerror(async (req, res, next) => {
   try {
     const { startDate, endDate, meals } = req.body;
@@ -39,21 +39,6 @@ export const CreateMealplan = catchaysynerror(async (req, res, next) => {
     return next(new Errorhandler(500, "Internal server error"));
   }
 });
-async function FindFilteredRecipes(meals, dietaryPreferences, allergies) {
-  const recipeIds = meals.every((meal) => {
-    meal.recipes.map((id) => {
-      ObjectId(id);
-    });
-  });
-  let query = { _id: { $in: recipeIds } };
-  if (dietaryPreferences.length > 0) {
-    query["dietaryLabels"] = { $in: dietaryPreferences };
-  }
-  if (allergies.length > 0) {
-    query["ingredients.name"] = { $nin: allergies };
-  }
-  return await Recipe.find(query);
-}
 
 async function generateShoppingList(recipes) {
   const ShoppingList = [];

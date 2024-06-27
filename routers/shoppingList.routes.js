@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { isAuthenticated } from "../middlewares/auth.middleware";
-import { UpdatedShoppingListStatus, createShoppingList, deletshoppingList, getShoppinglistbypagination, getshoppinglistbysearchbar } from "../controllers/Shopping.controller";
+import { isAuthenticated } from "../middlewares/auth.middleware.js";
+import { UpdatedShoppingListStatus, createShoppingList, deletshoppingList, getShoppinglistbypagination, getshoppinglistbysearchbar } from "../controllers/Shopping.controller.js";
 
 const shoppingRouter=Router();
 shoppingRouter.post("/create",isAuthenticated,createShoppingList);

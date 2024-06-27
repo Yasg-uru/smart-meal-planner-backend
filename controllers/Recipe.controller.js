@@ -4,7 +4,7 @@ import UploadOnCloudinary from "../utils/cloudinary.utils.js";
 import Recipe from "../models/Recipe.model.js";
 import paginate from "mongoose-paginate-v2";
 import { AdjustedIngredientQuantity } from "../helpers/Recipe.helper.js";
-import usermodel from "../models/user.models.js";
+import User from "../models/user.models.js";
 export const createRecipe = catchaysynerror(async (req, res, next) => {
   try {
     let imageurl = null;
@@ -132,7 +132,7 @@ export const Comparerecipewithdailygoals = catchaysynerror(
         return (recipevalues / dailygoalvalues) * 100;
       }
       function compareNutrients(recipeNutrients, dailyGoalNuitrients) {
-        return recipeNutrients.every((nuitrients) =>
+        return recipeNutrients.map((nuitrients) =>
           dailyGoalNuitrients.includes(nuitrients)
         );
       }
@@ -172,7 +172,9 @@ export const compareRecipeBynutrients = catchaysynerror(
           ),
           leader: getNutrientLeader(
             recipe1.nutritionalInfo.calories,
-            recipe2.nutritionalInfo.calories
+            recipe2.nutritionalInfo.calories,
+            recipe1,
+            recipe2
           ),
         },
         protein: {
@@ -182,7 +184,9 @@ export const compareRecipeBynutrients = catchaysynerror(
           ),
           leader: getNutrientLeader(
             recipe1.nutritionalInfo.protein,
-            recipe2.nutritionalInfo.protein
+            recipe2.nutritionalInfo.protein,
+            recipe1,
+            recipe2
           ),
         },
         carbohydrates: {
@@ -192,7 +196,9 @@ export const compareRecipeBynutrients = catchaysynerror(
           ),
           leader: getNutrientLeader(
             recipe1.nutritionalInfo.carbohydrates,
-            recipe2.nutritionalInfo.carbohydrates
+            recipe2.nutritionalInfo.carbohydrates,
+            recipe1,
+            recipe2
           ),
         },
         fats: {
@@ -202,7 +208,9 @@ export const compareRecipeBynutrients = catchaysynerror(
           ),
           leader: getNutrientLeader(
             recipe1.nutritionalInfo.fats,
-            recipe2.nutritionalInfo.fats
+            recipe2.nutritionalInfo.fats,
+            recipe1,
+            recipe2
           ),
         },
       };
@@ -211,9 +219,9 @@ export const compareRecipeBynutrients = catchaysynerror(
       }
       function getNutrientLeader(val1, val2) {
         if (val1 > val2) {
-          return val1;
+          return "Recipe1";
         } else if (val2 > val1) {
-          return val2;
+          return "Recipe2";
         } else {
           return "Both";
         }
@@ -240,9 +248,11 @@ export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
         const recipeIngredients = recipe.ingredients.map((ingredient) =>
           ingredient.name.toLowerCase()
         );
-        return MissingIngredients.every((missingIngredient) =>
+        const presentingredient = MissingIngredients.find((missingIngredient) =>
           recipeIngredients.includes(missingIngredient.toLowerCase())
         );
+        console.log(presentingredient);
+        return !presentingredient;
       });
       if (Recipesfiltered.length <= 0) {
         return next(
@@ -290,20 +300,27 @@ export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
   }
 });
 export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
-  try {
+  // try {
     const { recipeId } = req.params;
 
-    const user = await usermodel.findById(req.user._id);
+    const user = await User.findById(req.user._id);
     const recipe = await Recipe.findById(recipeId);
+    console.log(user);
+    const existlike = user.likedrecipes.includes(recipeId);
+    console.log(existlike);
+    if (existlike) {
+      return next(new Errorhandler(404, "already exist your like"));
+    }
     recipe.Likes = recipe.Likes + 1;
     await recipe.save();
     user.likedrecipes.push(recipe._id);
-    await recipe.save();
+    await user.save();
+
     res.status(200).json({
       success: true,
       message: "successfully added your like to this recipe",
     });
-  } catch (error) {
-    return next(new Errorhandler(500, "Internal server error"));
-  }
+  // } catch (error) {
+  //   return next(new Errorhandler(500, "Internal server error"));
+  // }
 });
