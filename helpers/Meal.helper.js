@@ -12,13 +12,14 @@ export async function FindFilteredRecipes(
 console.log(recipeIds);
 
   let query = { _id: { $in: recipeIds } };
-  if (dietaryPreferences.length > 0) {
-    query["dietaryLabels"] = { $in: dietaryPreferences };
-  }
+  // if (dietaryPreferences.length > 0) {
+  //   query["dietaryLabels"] = { $in: dietaryPreferences };
+  // }
   if (allergies.length > 0) {
     query["ingredients.name"] = { $nin: allergies };
   }
-  return await Recipe.find(query);
+  console.log("this is a query structure ",query);
+  return (await Recipe.find(query));
 }
 
 export async function generateShoppingList(recipes) {

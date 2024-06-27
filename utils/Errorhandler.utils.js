@@ -6,7 +6,7 @@ class Errorhandler extends Error {
     Error.captureStackTrace(this, this.contstructor);
   }
 }
-export const ErrorhandlerMiddleware = (err, res, req, next) => {
+export const ErrorhandlerMiddleware = (err, req, res, next) => {
   if (err instanceof Errorhandler) {
     return res.status(err.statuscode).json({
       message: err.message,

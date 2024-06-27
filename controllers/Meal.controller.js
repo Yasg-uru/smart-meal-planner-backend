@@ -2,7 +2,8 @@ import Mealplan from "../models/MealPlane.models.js";
 import catchaysynerror from "../middlewares/Catchasynerror.middleware.js";
 import Errorhandler from "../utils/Errorhandler.utils.js";
 import Recipe from "../models/Recipe.model.js";
-import {generateShoppingList} from "../helpers/Meal.helper.js";
+import { generateShoppingList } from "../helpers/Meal.helper.js";
+import User from "../models/user.models.js";
 
 import paginate from "mongoose-paginate";
 import { FindFilteredRecipes } from "../helpers/Meal.helper.js";
@@ -10,8 +11,7 @@ export const CreateMealplan = catchaysynerror(async (req, res, next) => {
   try {
     const { startDate, endDate, meals } = req.body;
     const user = req.user._id;
-    const recipeIds = meals.recipes;
-    const ShoppingList = [];
+
     const FilterRecipes = await FindFilteredRecipes(
       meals,
       req.user.dietaryPreferences,
@@ -20,15 +20,25 @@ export const CreateMealplan = catchaysynerror(async (req, res, next) => {
     if (!FilterRecipes) {
       return next(new Errorhandler(404, "recipe not found "));
     }
-    ShoppingList = await generateShoppingList(FilterRecipes);
+    console.log("this is filterrecipes", FilterRecipes);
+    const ShoppingList = await generateShoppingList(FilterRecipes);
+    const filteredRecipeIds = FilterRecipes.map((recipe) => {
+      return recipe._id.toString();
+    });
+    console.log("this is filtered recipes:", filteredRecipeIds);
+    const FilteredData = meals.map((meal) => ({
+      ...meal,
+      recipes: meal.recipes.filter((recipeId) =>
+        filteredRecipeIds.includes(recipeId)
+      ),
+    }));
+    console.log("this is new meal", FilteredData);
 
     const newMealplan = await Mealplan.create({
       user,
       startDate,
       endDate,
-      meals: FilterRecipes.map((recipe) => {
-        return recipe._id;
-      }),
+      meals: FilteredData,
     });
     res.status(200).json({
       success: true,
@@ -41,12 +51,10 @@ export const CreateMealplan = catchaysynerror(async (req, res, next) => {
   }
 });
 
-
-
 export const deleteMeal = catchaysynerror(async (req, res, next) => {
   try {
     const { mealId } = req.params;
-    const deletedMeal = await Mealplan.findbyIdAndDelete(mealId);
+    const deletedMeal = await Mealplan.findByIdAndDelete(mealId);
     if (!deleteMeal) {
       return next(new Errorhandler(404, "meal deletion failed "));
     }
@@ -97,5 +105,59 @@ export const searchyourmeals = catchaysynerror(async (req, res, next) => {
     });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error "));
+  }
+});
+
+
+export const FiltermealplanByyourdietaryPreferences = catchaysynerror(async (req, res, next) => {
+  try {
+    // Find the user's dietary preferences
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(new Error('User not found')); // Handle case where user is not found
+    }
+    const dietaryPreferences = user.dietaryPreferences;
+
+    // Find all recipes to filter meal plans
+    const allRecipes = await Recipe.find();
+    if (!allRecipes) {
+      return next(new Error('Recipes not found')); // Handle case where recipes are not found
+    }
+
+    // Find all meal plans
+    const mealPlans = await Mealplan.find();
+    if (!mealPlans) {
+      return next(new Error('Meal plans not found')); // Handle case where meal plans are not found
+    }
+
+    // Filter recipes based on dietary preferences
+    const filteredRecipes = allRecipes.filter(recipe =>
+      recipe.dietaryLabels.some(label => dietaryPreferences.includes(label))
+    );
+
+    // Prepare meal plans that include filtered recipes
+    const filteredMealPlans = mealPlans.map(mealPlan => {
+      const filteredMeals = mealPlan.meals.map(meal => ({
+        day: meal.day,
+        recipes: meal.recipes.filter(recipeId =>
+          filteredRecipes.some(recipe => recipe._id.equals(recipeId))
+        )
+      }));
+      return {
+        _id: mealPlan._id,
+        user: mealPlan.user,
+        startDate: mealPlan.startDate,
+        endDate: mealPlan.endDate,
+        meals: filteredMeals
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully fetched your filtered meal plans',
+      filteredMealPlans
+    });
+  } catch (error) {
+    next(new Errorhandler(500,error)); // Pass any caught error to the error handler middleware
   }
 });

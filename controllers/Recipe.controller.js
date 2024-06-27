@@ -61,6 +61,9 @@ export const GetRecipesBySearch = catchaysynerror(async (req, res, next) => {
     const query = { $text: { $search: searchTerm } }; // Make search term lowercase
 
     const recipes = await Recipe.find(query);
+    if(recipes.length==0){
+      return next(new Errorhandler(404,"recipes not found "));
+    }
     res.status(200).json({
       success: true,
       message: "fetched your searched result successfully",

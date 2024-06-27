@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import  paginate  from "mongoose-paginate-v2";
 
 const MealPlaneSchema = new Schema({
   user: {
@@ -29,5 +30,6 @@ const MealPlaneSchema = new Schema({
     },
   ],
 });
+MealPlaneSchema.plugin(paginate);
 const mealplanemodel=new model("Mealplane",MealPlaneSchema);
 export default mealplanemodel;
