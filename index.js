@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import UserRouter from "./routers/user.routers.js";
 import RecipeRouter from "./routers/Recipe.routes.js";
 import shoppingRouter from "./routers/shoppingList.routes.js";
+import mealplanRouter from "./routers/mealplan.routes.js";
 
 import bodyParser from "body-parser";
 const app = express();
@@ -12,6 +13,7 @@ app.use(cookieParser());
 app.use("/user",UserRouter)
 app.use("/recipe",RecipeRouter);
 app.use("/shopping",shoppingRouter);
+app.use("/mealplan",mealplanRouter);
 
 
 ConnectDatabase();

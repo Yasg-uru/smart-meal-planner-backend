@@ -1,6 +1,6 @@
 import Mealplan from "../models/MealPlane.models.js";
 import catchaysynerror from "../middlewares/Catchasynerror.middleware.js";
-import Errorhandler from "../utils/Errorhandler.utils";
+import Errorhandler from "../utils/Errorhandler.utils.js";
 import Recipe from "../models/Recipe.model.js";
 import {generateShoppingList} from "../helpers/Meal.helper.js";
 
