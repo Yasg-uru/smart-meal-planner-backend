@@ -37,8 +37,13 @@ const Recipeschema = new Schema({
   NumberofPersons:{
     type:Number,
     required:[true ,"please enter Number of persons "]
+  },
+  Likes:{
+    type:Number ,
+    default:0
   }
-  ,
+ ,
+  
   dietaryLabels: [String],
   nutritionalInfo: {
     calories: { type: Number },
@@ -48,6 +53,7 @@ const Recipeschema = new Schema({
     vitamins: [{ type: String }],
     minerals: [{ type: String }],
   },
+
 });
 Recipeschema.index({ name: 'text', description: 'text' });
 Recipeschema.plugin(paginate)

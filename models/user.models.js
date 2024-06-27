@@ -26,6 +26,15 @@ const userSchema = new Schema({
       type: String,
     },
   ],
+  likedrecipes:[
+    {
+      recipes:{
+        type:Schema.Types.ObjectId,
+        ref:"Recipe"
+      }
+    }
+  ]
+  ,
   dietaryPreferences: [{ type: String }],
   nutritionalGoals: {
     calories: { type: Number },
