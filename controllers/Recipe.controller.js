@@ -3,7 +3,8 @@ import Errorhandler from "../utils/Errorhandler.utils.js";
 import UploadOnCloudinary from "../utils/cloudinary.utils.js";
 import Recipe from "../models/Recipe.model.js";
 import paginate from "mongoose-paginate-v2";
-
+import { AdjustedIngredientQuantity } from "../helpers/Recipe.helper.js";
+import usermodel from "../models/user.models.js";
 export const createRecipe = catchaysynerror(async (req, res, next) => {
   try {
     let imageurl = null;
@@ -282,20 +283,27 @@ export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
       success: true,
       message:
         "successfully updated recipe according to number of persons as you given ",
-        AdjustedRecipe
+      AdjustedRecipe,
     });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error "));
   }
 });
-function AdjustedIngredientQuantity(OriginalQuantity, persons) {
-  const QuantityParts = OriginalQuantity.split(" ");
-  const numericvalue = parseFloat(QuantityParts[0]);
-  const unit = QuantityParts.slice(1);
-  if (!isNaN(numericvalue)) {
-    const adjustedValue = numericvalue * (persons / 4);
-    return `${adjustedValue} ${unit}`;
-  } else {
-    return OriginalQuantity;
+export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
+  try {
+    const { recipeId } = req.params;
+
+    const user = await usermodel.findById(req.user._id);
+    const recipe = await Recipe.findById(recipeId);
+    recipe.Likes = recipe.Likes + 1;
+    await recipe.save();
+    user.likedrecipes.push(recipe._id);
+    await recipe.save();
+    res.status(200).json({
+      success: true,
+      message: "successfully added your like to this recipe",
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error"));
   }
-}
+});
