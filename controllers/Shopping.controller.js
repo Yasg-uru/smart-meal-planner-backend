@@ -43,4 +43,67 @@ export const UpdatedShoppingListStatus = catchaysynerror(
     }
   }
 );
+export const deletshoppingList = catchaysynerror(async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const deletedlist = await ShoppingList.findbyIdAndDelete(id);
+    if (!deletedlist) {
+      return next(new Errorhandler(404, "list not found with this id "));
+    }
+    res.status(200).json({
+      success: true,
+      message: "deleted your list successfully",
+      deletedlist,
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error"));
+  }
+});
+export const getshoppinglistbysearchbar = catchaysynerror(
+  async (req, res, next) => {
+    try {
+      const { searchterm } = req.query;
+      if (!searchterm) {
+        return next(new Errorhandler(404, "please enter the searchquery"));
+      }
+      const searchresult = await ShoppingList.find({
+        $text: { $search: searchterm },
+      });
+      if (!searchterm) {
+        return next(new Errorhandler(404, "not result found with this query"));
+      }
+      res.status(200).json({
+        success: true,
+        message: "successfully fecthed your searched result ",
+        searchresult,
+      });
+    } catch (error) {
+      return next(new Errorhandler(500, "internal server error "));
+    }
+  }
+);
+export const getShoppinglistbypagination = catchaysynerror(
+  async (req, res, next) => {
+    try {
+      const { currentpage } = req.query;
+      const limit = 10;
+      const skip = (currentpage - 1) * limit;
+      const result = await ShoppingList.find().skip(skip).limit(limit);
+      if (!result) {
+        return next(new Errorhandler(404, "result not found for this page "));
+      }
+      const totaldocuments = await ShoppingList.countDocuments();
+      const Totalpages = Math.ceil(totaldocuments / limit);
+
+      res.status(200).json({
+        success: true,
+        message: "successfully fetched shoppinglist",
+        result,
+        Totalpages,
+      });
+    } catch (error) {
+      return next(new Errorhandler(500, "Internal server error "));
+    }
+  }
+);
 
