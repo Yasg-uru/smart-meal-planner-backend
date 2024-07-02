@@ -5,16 +5,23 @@ import UserRouter from "./routers/user.routers.js";
 import RecipeRouter from "./routers/Recipe.routes.js";
 import shoppingRouter from "./routers/shoppingList.routes.js";
 import mealplanRouter from "./routers/mealplan.routes.js";
-import {ErrorhandlerMiddleware} from "./utils/Errorhandler.utils.js";
+import { ErrorhandlerMiddleware } from "./utils/Errorhandler.utils.js";
+import cors from "cors";
 
 import bodyParser from "body-parser";
 const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use("/user",UserRouter)
-app.use("/recipe",RecipeRouter);
-app.use("/shopping",shoppingRouter);
-app.use("/mealplan",mealplanRouter);
+app.use("/user", UserRouter);
+app.use("/recipe", RecipeRouter);
+app.use("/shopping", shoppingRouter);
+app.use("/mealplan", mealplanRouter);
 
 app.use(ErrorhandlerMiddleware);
 ConnectDatabase();
