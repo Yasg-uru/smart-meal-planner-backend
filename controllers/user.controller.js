@@ -6,7 +6,7 @@ export const RegisterUser = catchaysynerror(async (req, res, next) => {
   // try {
   const { Name, Email } = req.body;
   const exisitinguser = await User.findOne({ $or: [{ Name }, { Email }] });
-  console.log("this is existing user:", exisitinguser);
+  console.log("this is existing user: ant this is a data :", exisitinguser,req.body);
   if (exisitinguser) {
     return next(
       new Errorhandler(404, "Already user Exist with this email or username")
