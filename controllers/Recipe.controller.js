@@ -6,23 +6,23 @@ import paginate from "mongoose-paginate-v2";
 import { AdjustedIngredientQuantity } from "../helpers/Recipe.helper.js";
 import User from "../models/user.models.js";
 export const createRecipe = catchaysynerror(async (req, res, next) => {
-  try {
-    let imageurl = null;
-    if (req.file && req.file.path) {
-      const cloudinary = await UploadOnCloudinary(req.file.path);
-      imageurl = cloudinary.secure_url;
-    }
-    const author = req.user?._id;
-
-    const newRecipe = await Recipe.create({ author, imageurl, ...req.body });
-    res.status(200).json({
-      success: true,
-      message: "successfully created recipe",
-      newRecipe,
-    });
-  } catch (error) {
-    return next(new Errorhandler(500, "Internal server error"));
+  // try {
+  let imageurl = null;
+  if (req.file && req.file.path) {
+    const cloudinary = await UploadOnCloudinary(req.file.path);
+    imageurl = cloudinary.secure_url;
   }
+  const author = req.user?._id;
+
+  const newRecipe = await Recipe.create({ author, imageurl, ...req.body });
+  res.status(200).json({
+    success: true,
+    message: "successfully created recipe",
+    newRecipe,
+  });
+  // } catch (error) {
+  //   return next(new Errorhandler(500, "Internal server error"));
+  // }
 });
 
 export const updaterecipe = catchaysynerror(async (req, res, next) => {
@@ -61,8 +61,8 @@ export const GetRecipesBySearch = catchaysynerror(async (req, res, next) => {
     const query = { $text: { $search: searchTerm } }; // Make search term lowercase
 
     const recipes = await Recipe.find(query);
-    if(recipes.length==0){
-      return next(new Errorhandler(404,"recipes not found "));
+    if (recipes.length == 0) {
+      return next(new Errorhandler(404, "recipes not found "));
     }
     res.status(200).json({
       success: true,
@@ -77,9 +77,12 @@ export const GetRecipesBypagination = catchaysynerror(
   async (req, res, next) => {
     try {
       const page = parseInt(req.query.page) || 1;
-      const limit = 20;
+      const limit = 2;
       const options = { page, limit };
       const recipes = await Recipe.paginate({}, options);
+      if (recipes.docs === 0) {
+        return next(new Errorhandler(404, "recipes not found "));
+      }
       res.status(200).json({
         success: true,
         message: "fecthed your recipes successfully",
@@ -304,25 +307,25 @@ export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
 });
 export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
   // try {
-    const { recipeId } = req.params;
+  const { recipeId } = req.params;
 
-    const user = await User.findById(req.user._id);
-    const recipe = await Recipe.findById(recipeId);
-    console.log(user);
-    const existlike = user.likedrecipes.includes(recipeId);
-    console.log(existlike);
-    if (existlike) {
-      return next(new Errorhandler(404, "already exist your like"));
-    }
-    recipe.Likes = recipe.Likes + 1;
-    await recipe.save();
-    user.likedrecipes.push(recipe._id);
-    await user.save();
+  const user = await User.findById(req.user._id);
+  const recipe = await Recipe.findById(recipeId);
+  console.log(user);
+  const existlike = user.likedrecipes.includes(recipeId);
+  console.log(existlike);
+  if (existlike) {
+    return next(new Errorhandler(404, "already exist your like"));
+  }
+  recipe.Likes = recipe.Likes + 1;
+  await recipe.save();
+  user.likedrecipes.push(recipe._id);
+  await user.save();
 
-    res.status(200).json({
-      success: true,
-      message: "successfully added your like to this recipe",
-    });
+  res.status(200).json({
+    success: true,
+    message: "successfully added your like to this recipe",
+  });
   // } catch (error) {
   //   return next(new Errorhandler(500, "Internal server error"));
   // }

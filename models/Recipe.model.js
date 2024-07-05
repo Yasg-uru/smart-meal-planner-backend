@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import paginate from "mongoose-paginate-v2"
+import paginate from "mongoose-paginate-v2";
 const Recipeschema = new Schema({
   title: {
     type: String,
@@ -34,16 +34,14 @@ const Recipeschema = new Schema({
     type: String,
     enum: ["lunch", "dinner", "snack", "breakfast"],
   },
-  NumberofPersons:{
-    type:Number,
-    required:[true ,"please enter Number of persons "]
+  NumberofPersons: {
+    type: Number,
+    required: [true, "please enter Number of persons "],
   },
-  Likes:{
-    type:Number ,
-    default:0
-  }
- ,
-  
+  Likes: {
+    type: Number,
+    default: 0,
+  },
   dietaryLabels: [String],
   nutritionalInfo: {
     calories: { type: Number },
@@ -53,9 +51,8 @@ const Recipeschema = new Schema({
     vitamins: [{ type: String }],
     minerals: [{ type: String }],
   },
-
 });
-Recipeschema.index({ name: 'text', description: 'text' });
-Recipeschema.plugin(paginate)
+Recipeschema.index({ name: "text", description: "text" });
+Recipeschema.plugin(paginate);
 const recipemodel = model("Recipe", Recipeschema);
 export default recipemodel;

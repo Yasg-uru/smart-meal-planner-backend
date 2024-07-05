@@ -21,7 +21,7 @@ RecipeRouter.get("/bysearch", isAuthenticated, GetRecipesBySearch);
 RecipeRouter.get("/bypagination", isAuthenticated, GetRecipesBypagination);
 RecipeRouter.get("/compare", isAuthenticated, Comparerecipewithdailygoals);
 RecipeRouter.get("/compareRecipes", isAuthenticated, compareRecipeBynutrients);
-RecipeRouter.get(
+RecipeRouter.post(
   "/bymissing",
   isAuthenticated,
   GetRecipesAccordingtoMissingIngredients

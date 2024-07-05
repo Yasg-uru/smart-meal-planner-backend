@@ -13,7 +13,7 @@ const app = express();
 app.use(
   cors({
     origin: "http://localhost:5173",
-    // credentials: true,
+    credentials: true,
   })
 );
 app.use(bodyParser.json());
@@ -23,7 +23,7 @@ app.use("/recipe", RecipeRouter);
 app.use("/shopping", shoppingRouter);
 app.use("/mealplan", mealplanRouter);
 
-app.use(ErrorhandlerMiddleware);
+// app.use(ErrorhandlerMiddleware);
 ConnectDatabase();
 
 app.listen(4000, () => {
