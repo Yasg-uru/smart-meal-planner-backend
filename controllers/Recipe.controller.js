@@ -329,6 +329,7 @@ export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "successfully added your like to this recipe",
+    recipe
   });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error"));
