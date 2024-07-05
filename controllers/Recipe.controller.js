@@ -280,33 +280,37 @@ export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
 
 export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
   try {
-    const { recipeId } = req.query;
-    const { persons } = req.query;
-    const recipe = await Recipe.findById(recipeId);
-    if (!recipe) {
-      return next(new Errorhandler(404, "recipe not found "));
-    }
+  const { recipeId } = req.query;
+  const { persons } = req.query;
+console.log("this is req.query:",req.query.recipeId)
+  const recipe = await Recipe.findById(recipeId);
+  if (!recipe) {
+    return next(new Errorhandler(404, "recipe not found "));
+  }
 
-    const AdjustedIngredients = recipe.ingredients.map((ingredient) => ({
-      ...ingredient.toObject(),
-      quantity: AdjustedIngredientQuantity(ingredient.quantity, persons),
-    }));
-    const AdjustedRecipe = {
-      ...recipe.toObject(),
-      ingredients: AdjustedIngredients,
-    };
-    res.status(200).json({
-      success: true,
-      message:
-        "successfully updated recipe according to number of persons as you given ",
-      AdjustedRecipe,
-    });
+  const AdjustedIngredients = recipe.ingredients.map((ingredient) => ({
+    ...ingredient.toObject(),
+    quantity: AdjustedIngredientQuantity(
+      ingredient.quantity,
+      parseInt(persons)
+    ),
+  }));
+  const AdjustedRecipe = {
+    ...recipe.toObject(),
+    ingredients: AdjustedIngredients,
+  };
+  res.status(200).json({
+    success: true,
+    message:
+      "successfully updated recipe according to number of persons as you given ",
+    AdjustedRecipe,
+  });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error "));
   }
 });
 export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
-  // try {
+  try {
   const { recipeId } = req.params;
 
   const user = await User.findById(req.user._id);
@@ -326,7 +330,7 @@ export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
     success: true,
     message: "successfully added your like to this recipe",
   });
-  // } catch (error) {
-  //   return next(new Errorhandler(500, "Internal server error"));
-  // }
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error"));
+  }
 });
