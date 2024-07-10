@@ -22,6 +22,7 @@ export const RegisterUser = catchaysynerror(async (req, res, next) => {
 export const Login = catchaysynerror(async (req, res, next) => {
   try {
     const { Email, password } = req.body;
+    console.log("this is email and password",Email,password)
     if (!Email || !password) {
       return next(new Errorhandler(404, "Invalid Credentials"));
     }
