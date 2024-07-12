@@ -9,7 +9,7 @@ const ShoppingSchema = new Schema(
     },
     items: [
       {
-        Name: {
+        name: {
           type: String,
         },
         quantity: {
@@ -26,5 +26,7 @@ const ShoppingSchema = new Schema(
     timestamps: true,
   }
 );
+ShoppingSchema.index({ name: "text", "items.name": "text" });
+
 const shoppingmodel = model("Shopping", ShoppingSchema);
 export default shoppingmodel;
