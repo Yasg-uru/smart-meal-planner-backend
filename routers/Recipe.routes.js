@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   Comparerecipewithdailygoals,
   GetAdjustedRecipe,
+  GetAllRecipes,
   GetRecipesAccordingtoMissingIngredients,
   GetRecipesBySearch,
   GetRecipesBypagination,
@@ -28,5 +29,6 @@ RecipeRouter.post(
 );
 RecipeRouter.get("/adjusted", isAuthenticated, GetAdjustedRecipe);
 RecipeRouter.put("/like/:recipeId", isAuthenticated, LikeRecipebyuser);
+RecipeRouter.get("/", isAuthenticated, GetAllRecipes);
 
 export default RecipeRouter;

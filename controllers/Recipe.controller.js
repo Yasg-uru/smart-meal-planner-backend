@@ -280,57 +280,72 @@ export const GetRecipesAccordingtoMissingIngredients = catchaysynerror(
 
 export const GetAdjustedRecipe = catchaysynerror(async (req, res, next) => {
   try {
-  const { recipeId } = req.query;
-  const { persons } = req.query;
-console.log("this is req.query:",req.query.recipeId)
-  const recipe = await Recipe.findById(recipeId);
-  if (!recipe) {
-    return next(new Errorhandler(404, "recipe not found "));
-  }
+    const { recipeId } = req.query;
+    const { persons } = req.query;
+    console.log("this is req.query:", req.query.recipeId);
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      return next(new Errorhandler(404, "recipe not found "));
+    }
 
-  const AdjustedIngredients = recipe.ingredients.map((ingredient) => ({
-    ...ingredient.toObject(),
-    quantity: AdjustedIngredientQuantity(
-      ingredient.quantity,
-      parseInt(persons)
-    ),
-  }));
-  const AdjustedRecipe = {
-    ...recipe.toObject(),
-    ingredients: AdjustedIngredients,
-  };
-  res.status(200).json({
-    success: true,
-    message:
-      "successfully updated recipe according to number of persons as you given ",
-    AdjustedRecipe,
-  });
+    const AdjustedIngredients = recipe.ingredients.map((ingredient) => ({
+      ...ingredient.toObject(),
+      quantity: AdjustedIngredientQuantity(
+        ingredient.quantity,
+        parseInt(persons)
+      ),
+    }));
+    const AdjustedRecipe = {
+      ...recipe.toObject(),
+      ingredients: AdjustedIngredients,
+    };
+    res.status(200).json({
+      success: true,
+      message:
+        "successfully updated recipe according to number of persons as you given ",
+      AdjustedRecipe,
+    });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error "));
   }
 });
 export const LikeRecipebyuser = catchaysynerror(async (req, res, next) => {
   try {
-  const { recipeId } = req.params;
+    const { recipeId } = req.params;
 
-  const user = await User.findById(req.user._id);
-  const recipe = await Recipe.findById(recipeId);
-  console.log(user);
-  const existlike = user.likedrecipes.includes(recipeId);
-  console.log(existlike);
-  if (existlike) {
-    return next(new Errorhandler(404, "already exist your like"));
+    const user = await User.findById(req.user._id);
+    const recipe = await Recipe.findById(recipeId);
+    console.log(user);
+    const existlike = user.likedrecipes.includes(recipeId);
+    console.log(existlike);
+    if (existlike) {
+      return next(new Errorhandler(404, "already exist your like"));
+    }
+    recipe.Likes = recipe.Likes + 1;
+    await recipe.save();
+    user.likedrecipes.push(recipe._id);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "successfully added your like to this recipe",
+      recipe,
+    });
+  } catch (error) {
+    return next(new Errorhandler(500, "Internal server error"));
   }
-  recipe.Likes = recipe.Likes + 1;
-  await recipe.save();
-  user.likedrecipes.push(recipe._id);
-  await user.save();
-
-  res.status(200).json({
-    success: true,
-    message: "successfully added your like to this recipe",
-    recipe
-  });
+});
+export const GetAllRecipes = catchaysynerror(async (req, res, next) => {
+  try {
+    const recipes = await Recipe.find({});
+    if (recipes.length <= 0) {
+      return next(new Errorhandler(404, "Recipe Not found "));
+    }
+    res.status(200).json({
+      success: true,
+      message: "successfully fetched your recipes",
+      recipes,
+    });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error"));
   }

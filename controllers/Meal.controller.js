@@ -89,75 +89,83 @@ export const getyourmeals = catchaysynerror(async (req, res, next) => {
 });
 export const searchyourmeals = catchaysynerror(async (req, res, next) => {
   try {
-    const { searchTerm } = req.query;
-    const result = await Mealplan.find({
-      $text: { $search: searchTerm },
-    });
-    if (!result) {
-      return next(
-        new Errorhandler(404, "meal plan not found for this searchquery")
-      );
-    }
-    res.status(200).json({
-      success: true,
-      message: "successfully searched your meal plan ",
-      result,
-    });
+  const { startDate, endDate } = req.query;
+  if (!startDate || !endDate) {
+    return next(new Errorhandler(404, "please enter both start and end Date "));
+  }
+  const start = new Date(startDate),
+    end = new Date(endDate);
+
+  const result = await Mealplan.find({
+    startDate: { $gte: start },
+    endDate: { $lte: endDate },
+  });
+  if (!result) {
+    return next(
+      new Errorhandler(404, "meal plan not found for this searchquery")
+    );
+  }
+  res.status(200).json({
+    success: true,
+    message: "successfully searched your meal plan ",
+    result,
+  });
   } catch (error) {
     return next(new Errorhandler(500, "Internal server error "));
   }
 });
 
+export const FiltermealplanByyourdietaryPreferences = catchaysynerror(
+  async (req, res, next) => {
+    try {
+      // Find the user's dietary preferences
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return next(new Error("User not found")); // Handle case where user is not found
+      }
+      const dietaryPreferences = user.dietaryPreferences;
 
-export const FiltermealplanByyourdietaryPreferences = catchaysynerror(async (req, res, next) => {
-  try {
-    // Find the user's dietary preferences
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return next(new Error('User not found')); // Handle case where user is not found
+      // Find all recipes to filter meal plans
+      const allRecipes = await Recipe.find();
+      if (!allRecipes) {
+        return next(new Error("Recipes not found")); // Handle case where recipes are not found
+      }
+
+      // Find all meal plans
+      const mealPlans = await Mealplan.find();
+      if (!mealPlans) {
+        return next(new Error("Meal plans not found")); // Handle case where meal plans are not found
+      }
+
+      // Filter recipes based on dietary preferences
+      const filteredRecipes = allRecipes.filter((recipe) =>
+        recipe.dietaryLabels.some((label) => dietaryPreferences.includes(label))
+      );
+
+      // Prepare meal plans that include filtered recipes
+      const filteredMealPlans = mealPlans.map((mealPlan) => {
+        const filteredMeals = mealPlan.meals.map((meal) => ({
+          day: meal.day,
+          recipes: meal.recipes.filter((recipeId) =>
+            filteredRecipes.some((recipe) => recipe._id.equals(recipeId))
+          ),
+        }));
+        return {
+          _id: mealPlan._id,
+          user: mealPlan.user,
+          startDate: mealPlan.startDate,
+          endDate: mealPlan.endDate,
+          meals: filteredMeals,
+        };
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully fetched your filtered meal plans",
+        filteredMealPlans,
+      });
+    } catch (error) {
+      next(new Errorhandler(500, error)); // Pass any caught error to the error handler middleware
     }
-    const dietaryPreferences = user.dietaryPreferences;
-
-    // Find all recipes to filter meal plans
-    const allRecipes = await Recipe.find();
-    if (!allRecipes) {
-      return next(new Error('Recipes not found')); // Handle case where recipes are not found
-    }
-
-    // Find all meal plans
-    const mealPlans = await Mealplan.find();
-    if (!mealPlans) {
-      return next(new Error('Meal plans not found')); // Handle case where meal plans are not found
-    }
-
-    // Filter recipes based on dietary preferences
-    const filteredRecipes = allRecipes.filter(recipe =>
-      recipe.dietaryLabels.some(label => dietaryPreferences.includes(label))
-    );
-
-    // Prepare meal plans that include filtered recipes
-    const filteredMealPlans = mealPlans.map(mealPlan => {
-      const filteredMeals = mealPlan.meals.map(meal => ({
-        day: meal.day,
-        recipes: meal.recipes.filter(recipeId =>
-          filteredRecipes.some(recipe => recipe._id.equals(recipeId))
-        )
-      }));
-      return {
-        _id: mealPlan._id,
-        user: mealPlan.user,
-        startDate: mealPlan.startDate,
-        endDate: mealPlan.endDate,
-        meals: filteredMeals
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Successfully fetched your filtered meal plans',
-      filteredMealPlans
-    });
-  } catch (error) {
-    next(new Errorhandler(500,error)); // Pass any caught error to the error handler middleware
   }
-});
+);
