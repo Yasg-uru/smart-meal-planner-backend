@@ -135,7 +135,9 @@ export const Comparerecipewithdailygoals = catchaysynerror(
         ),
       };
       function calculateDifference(recipevalues, dailygoalvalues) {
-        return (recipevalues / dailygoalvalues) * 100;
+        const precentage = (recipevalues / dailygoalvalues) * 100;
+
+        return precentage > 100 ? 100 : parseInt(precentage);
       }
       function compareNutrients(recipeNutrients, dailyGoalNuitrients) {
         return recipeNutrients.map((nuitrients) =>
@@ -146,6 +148,10 @@ export const Comparerecipewithdailygoals = catchaysynerror(
         success: true,
         message: "successfully compared your nutrients with recipe",
         comparedInfo,
+        dailyGoals,
+        RecipeNutrient: recipe.nutritionalInfo,
+        
+
       });
     } catch (error) {
       return next(new Errorhandler(500, "Internal server error"));
