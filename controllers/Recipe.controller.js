@@ -150,8 +150,6 @@ export const Comparerecipewithdailygoals = catchaysynerror(
         comparedInfo,
         dailyGoals,
         RecipeNutrient: recipe.nutritionalInfo,
-        
-
       });
     } catch (error) {
       return next(new Errorhandler(500, "Internal server error"));
