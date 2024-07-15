@@ -46,12 +46,12 @@ export const Login = catchaysynerror(async (req, res, next) => {
 });
 
 export const forgotPassword = catchaysynerror(async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
+  // try {
+    const { Email } = req.body;
+    if (!Email) {
       return next(new Errorhandler(404, "Please enter email first "));
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ Email });
     if (!user) {
       return next(new Errorhandler(404, "User Not Found "));
     }
@@ -61,29 +61,29 @@ export const forgotPassword = catchaysynerror(async (req, res, next) => {
     user.ResetPasswordTokenExpire = Date.now() + 3600000;
     await user.save();
     const MailOptions = {
-      to: user.email,
-      from: "passwordreset@example.com",
+      to: Email,
+      from: "yashpawar12122004@gmail.com",
       subject: "Password Reset",
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
     Please click on the following link, or paste this into your browser to complete the process:\n\n
     http://${req.headers.host}/reset/${Token}\n\n
     If you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
-    const Response = SendMail(MailOptions);
+    const Response = await SendMail(MailOptions);
     console.log("this is a response:", Response);
     res.status(200).json({
       success: true,
       message: "Mail Sent Successfully",
     });
-  } catch (error) {
-    return next(new Errorhandler(500,"Internal server Error"));
-  }
+  // } catch (error) {
+  //   return next(new Errorhandler(500,"Internal server Error"));
+  // }
 });
 
 export const ResetPassword = catchaysynerror(async (req, res, next) => {
-  try {
+  // try {
     const { token } = req.params;
-    const password = req.body;
+    const {password} = req.body;
     const user = await User.findOne({
       ResetPasswordToken: token,
       ResetPasswordTokenExpire: { $gt: new Date() },
@@ -96,7 +96,7 @@ export const ResetPassword = catchaysynerror(async (req, res, next) => {
     user.ResetPasswordTokenExpire = undefined;
     await user.save();
     SendToken(user, res, 200);
-  } catch (error) {
-    return next(new Errorhandler(500, "internal server Error"));
-  }
+  // } catch (error) {
+  //   return next(new Errorhandler(500, "internal server Error"));
+  // }
 });
