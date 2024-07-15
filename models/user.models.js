@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 const userSchema = new Schema({
   Name: {
@@ -41,6 +42,12 @@ const userSchema = new Schema({
     vitamins: [{ type: String }],
     minerals: [{ type: String }],
   },
+  ResetPasswordToken:{
+    type:String 
+  },
+  ResetPasswordTokenExpire:{
+    type:Date
+  }
 });
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
@@ -73,5 +80,9 @@ userSchema.methods.getJwtToken = function () {
 userSchema.methods.ComparePassword = function (password) {
   return bcrypt.compare(password, this.password);
 };
+userSchema.methods.getResetToken=function (){
+  return  crypto.randomBytes(20).toString('hex');
+
+}
 const usermodel = model("User", userSchema);
 export default usermodel;
